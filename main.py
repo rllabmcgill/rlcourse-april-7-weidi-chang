@@ -9,7 +9,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.utils.np_utils import to_categorical
 
-PRECISION = 1 # 2 decimal points for continuous states
+PRECISION = 1 # 1 decimal points for continuous states
 
 class Agent(object):
 
@@ -34,7 +34,6 @@ class Agent(object):
         print("Observation Space", env.observation_space)
         print("Action Space", env.action_space)
 
-        # self.q = np.zeros()
         self.policy = {}
         self.q = {}
         self.prev_action = 0.0
@@ -72,7 +71,6 @@ def rollout(env, agent, max_pathlength, n_timesteps):
             ob = res[0]
             ob = np.around(ob, PRECISION)
             rewards.append(res[1])
-            # state_action = tuple(ob) + (action,)
             ob = tuple(ob)
             if ob in q and len(q[ob])>0:
                 q[ob][action] = q[ob][action] + agent.gamma**j * res[1]
@@ -120,10 +118,7 @@ def api(agent, env):
                 training_set.append((state, opt_act[state]))
             else:
                 training_set.append((state, opt_act[state]))
-        import pprint
-        # pprint.pprint(training_set)
         x = [item[0] for item in list(training_set)]
-        # print [item[-1] for item in training_set]
         y = [item[-1] for item in training_set]
         y = to_categorical(y, num_classes=2)
 
@@ -132,6 +127,7 @@ def api(agent, env):
             pred = agent.model.predict(np.expand_dims(list(state), axis=0), batch_size = 1)
             new_pol[state] = np.argmax(pred)
     return pol
+
 
 def main():
     # parser = argparse.ArgumentParser()
@@ -165,30 +161,6 @@ def main():
             env.close()
             print('returns', totalr)
 
-    # for i in range(agent.n_rollouts):
-    #     rollout(env, agent, 100, max_steps)
-    #     print('iter', i)
-        # obs = env.reset()
-        # print obs
-        # done = False
-
-
-    #     while not done:
-    #
-    #         action = env.action_space.sample()
-    #         obs, r, done, _ = env.step(action)
-    #         totalr += r
-    #         steps += 1
-    #         # if args.render:
-    #         env.render()
-    #         if steps % 100 == 0: print("%i/%i"%(steps, max_steps))
-    #         if steps >= max_steps:
-    #             break
-    #     returns.append(totalr)
-    #
-    # print('returns', returns)
-    # print('mean return', np.mean(returns))
-    # print('std of return', np.std(returns))
 
 if __name__ == '__main__':
     main()
